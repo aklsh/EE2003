@@ -42,6 +42,6 @@ References
 [2] - https://github.com/steveicarus/iverilog, install in tools/
 [3] - https://github.com/gtkwave/gtkwave/tree/master/gtkwave3-gtk3, install in tools/
 [4] - https://direnv.net/
-[5] - build from source (https://github.com/riscv/riscv-tools). install in tools/ directory
+[5] - https://github.com/riscv/riscv-tools, install in tools/ directory
 [6] - https://github.com/YosysHQ/yosys - recommended to use v0.9 (support for RAM32, which is necessary, is introduced only in v0.9). install in tools/ directory
 [7] - install in tools/
