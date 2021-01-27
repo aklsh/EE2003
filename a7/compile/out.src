@@ -1,0 +1,353 @@
+
+out.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .init:
+
+00000000 <_start>:
+_start:
+    .cfi_startproc
+    .cfi_undefined ra
+    .option push
+    .option norelax
+    la gp, __global_pointer$
+   0:	00002197          	auipc	x3,0x2
+   4:	b9418193          	addi	x3,x3,-1132 # 1b94 <__global_pointer$>
+    .option pop
+    la sp, __stack_top
+   8:	00001117          	auipc	x2,0x1
+   c:	ff810113          	addi	x2,x2,-8 # 1000 <__stack_top>
+    add s0, sp, zero
+  10:	00010433          	add	x8,x2,x0
+    jal zero, main
+  14:	2fc0006f          	jal	x0,310 <main>
+
+Disassembly of section .text:
+
+00000018 <_outbyte>:
+#define OUTPERIPH_BASE 0x00004000
+#define OUTPERIPH_WRITE_OFFSET 0x0000000
+#define OUTPERIPH_READSTATUS_OFFSET 0x00000004
+
+void _outbyte(int c)
+{
+  18:	fd010113          	addi	x2,x2,-48
+  1c:	02812623          	sw	x8,44(x2)
+  20:	03010413          	addi	x8,x2,48
+  24:	fca42e23          	sw	x10,-36(x8)
+	// Fill in the code here
+        // What you need is to write to the address of the peripheral (as defined in the BIU)
+        // Example code here:
+        int *p;  // Pointer to integer
+        p = (OUTPERIPH_BASE + OUTPERIPH_WRITE_OFFSET); // Set pointer value directly
+  28:	000047b7          	lui	x15,0x4
+  2c:	fef42623          	sw	x15,-20(x8)
+        (*p) = c; // Write the value to the address
+  30:	fec42783          	lw	x15,-20(x8)
+  34:	fdc42703          	lw	x14,-36(x8)
+  38:	00e7a023          	sw	x14,0(x15) # 4000 <__global_pointer$+0x246c>
+}
+  3c:	00000013          	addi	x0,x0,0
+  40:	02c12403          	lw	x8,44(x2)
+  44:	03010113          	addi	x2,x2,48
+  48:	00008067          	jalr	x0,0(x1)
+
+0000004c <outbyte>:
+
+void outbyte(int c)
+{
+  4c:	fe010113          	addi	x2,x2,-32
+  50:	00112e23          	sw	x1,28(x2)
+  54:	00812c23          	sw	x8,24(x2)
+  58:	02010413          	addi	x8,x2,32
+  5c:	fea42623          	sw	x10,-20(x8)
+        static char prev = 0;
+        if (c < ' ' && c != '\r' && c != '\n' && c != '\t' && c != '\b')
+  60:	fec42703          	lw	x14,-20(x8)
+  64:	01f00793          	addi	x15,x0,31
+  68:	02e7ca63          	blt	x15,x14,9c <outbyte+0x50>
+  6c:	fec42703          	lw	x14,-20(x8)
+  70:	00d00793          	addi	x15,x0,13
+  74:	02f70463          	beq	x14,x15,9c <outbyte+0x50>
+  78:	fec42703          	lw	x14,-20(x8)
+  7c:	00a00793          	addi	x15,x0,10
+  80:	00f70e63          	beq	x14,x15,9c <outbyte+0x50>
+  84:	fec42703          	lw	x14,-20(x8)
+  88:	00900793          	addi	x15,x0,9
+  8c:	00f70863          	beq	x14,x15,9c <outbyte+0x50>
+  90:	fec42703          	lw	x14,-20(x8)
+  94:	00800793          	addi	x15,x0,8
+  98:	02f71e63          	bne	x14,x15,d4 <outbyte+0x88>
+            return;
+        if (c == '\n' && prev != '\r')
+  9c:	fec42703          	lw	x14,-20(x8)
+  a0:	00a00793          	addi	x15,x0,10
+  a4:	00f71c63          	bne	x14,x15,bc <outbyte+0x70>
+  a8:	3a804703          	lbu	x14,936(x0) # 3a8 <prev.965>
+  ac:	00d00793          	addi	x15,x0,13
+  b0:	00f70663          	beq	x14,x15,bc <outbyte+0x70>
+            _outbyte('\r');
+  b4:	00d00513          	addi	x10,x0,13
+  b8:	f61ff0ef          	jal	x1,18 <_outbyte>
+        _outbyte(c);
+  bc:	fec42503          	lw	x10,-20(x8)
+  c0:	f59ff0ef          	jal	x1,18 <_outbyte>
+        prev = c;
+  c4:	fec42783          	lw	x15,-20(x8)
+  c8:	0ff7f713          	andi	x14,x15,255
+  cc:	3ae00423          	sb	x14,936(x0) # 3a8 <prev.965>
+  d0:	0080006f          	jal	x0,d8 <outbyte+0x8c>
+            return;
+  d4:	00000013          	addi	x0,x0,0
+}
+  d8:	01c12083          	lw	x1,28(x2)
+  dc:	01812403          	lw	x8,24(x2)
+  e0:	02010113          	addi	x2,x2,32
+  e4:	00008067          	jalr	x0,0(x1)
+
+000000e8 <readstatus>:
+// The following function should read back the number of bytes that
+// have gone through the peripheral since system startup.  Again, the
+// address of the status readout register is your choice, and can be
+// hardcoded here or declared as a #define
+int readstatus()
+{
+  e8:	fe010113          	addi	x2,x2,-32
+  ec:	00812e23          	sw	x8,28(x2)
+  f0:	02010413          	addi	x8,x2,32
+        // Fill in code here
+        // Note how the _outbyte function was written, and adapt it to read back the status register
+        int *p;
+        p = (OUTPERIPH_BASE + OUTPERIPH_READSTATUS_OFFSET);
+  f4:	000047b7          	lui	x15,0x4
+  f8:	00478793          	addi	x15,x15,4 # 4004 <__global_pointer$+0x2470>
+  fc:	fef42623          	sw	x15,-20(x8)
+        return (*p);
+ 100:	fec42783          	lw	x15,-20(x8)
+ 104:	0007a783          	lw	x15,0(x15)
+}
+ 108:	00078513          	addi	x10,x15,0
+ 10c:	01c12403          	lw	x8,28(x2)
+ 110:	02010113          	addi	x2,x2,32
+ 114:	00008067          	jalr	x0,0(x1)
+
+00000118 <mydiv>:
+// These funcs have not been checked - they may fail for large
+// or negative values.
+// We could also have had a single function computing both, but would
+// need pointers or assembly to return two values.
+static int mydiv(int u, int b)
+{
+ 118:	fe010113          	addi	x2,x2,-32
+ 11c:	00812e23          	sw	x8,28(x2)
+ 120:	00912c23          	sw	x9,24(x2)
+ 124:	01212a23          	sw	x18,20(x2)
+ 128:	02010413          	addi	x8,x2,32
+ 12c:	fea42623          	sw	x10,-20(x8)
+ 130:	feb42423          	sw	x11,-24(x8)
+	register unsigned int q = 0;
+ 134:	00000913          	addi	x18,x0,0
+	register unsigned int m = u;
+ 138:	fec42483          	lw	x9,-20(x8)
+	while (m >= b) {
+ 13c:	0100006f          	jal	x0,14c <mydiv+0x34>
+		m -= b;
+ 140:	fe842783          	lw	x15,-24(x8)
+ 144:	40f484b3          	sub	x9,x9,x15
+		q++;
+ 148:	00190913          	addi	x18,x18,1
+	while (m >= b) {
+ 14c:	fe842783          	lw	x15,-24(x8)
+ 150:	fef4f8e3          	bgeu	x9,x15,140 <mydiv+0x28>
+	}
+	return q;
+ 154:	00090793          	addi	x15,x18,0
+}
+ 158:	00078513          	addi	x10,x15,0
+ 15c:	01c12403          	lw	x8,28(x2)
+ 160:	01812483          	lw	x9,24(x2)
+ 164:	01412903          	lw	x18,20(x2)
+ 168:	02010113          	addi	x2,x2,32
+ 16c:	00008067          	jalr	x0,0(x1)
+
+00000170 <mymod>:
+
+static int mymod(int u, int b)
+{
+ 170:	fe010113          	addi	x2,x2,-32
+ 174:	00812e23          	sw	x8,28(x2)
+ 178:	00912c23          	sw	x9,24(x2)
+ 17c:	02010413          	addi	x8,x2,32
+ 180:	fea42623          	sw	x10,-20(x8)
+ 184:	feb42423          	sw	x11,-24(x8)
+	register unsigned int m = u;
+ 188:	fec42483          	lw	x9,-20(x8)
+	while (m >= b) m -= b;
+ 18c:	00c0006f          	jal	x0,198 <mymod+0x28>
+ 190:	fe842783          	lw	x15,-24(x8)
+ 194:	40f484b3          	sub	x9,x9,x15
+ 198:	fe842783          	lw	x15,-24(x8)
+ 19c:	fef4fae3          	bgeu	x9,x15,190 <mymod+0x20>
+	return m;
+ 1a0:	00048793          	addi	x15,x9,0
+}
+ 1a4:	00078513          	addi	x10,x15,0
+ 1a8:	01c12403          	lw	x8,28(x2)
+ 1ac:	01812483          	lw	x9,24(x2)
+ 1b0:	02010113          	addi	x2,x2,32
+ 1b4:	00008067          	jalr	x0,0(x1)
+
+000001b8 <convert>:
+
+char *convert(unsigned int num, int base)
+{
+ 1b8:	fd010113          	addi	x2,x2,-48
+ 1bc:	02112623          	sw	x1,44(x2)
+ 1c0:	02812423          	sw	x8,40(x2)
+ 1c4:	03010413          	addi	x8,x2,48
+ 1c8:	fca42e23          	sw	x10,-36(x8)
+ 1cc:	fcb42c23          	sw	x11,-40(x8)
+	static char Representation[]= "0123456789ABCDEF";
+	static char buffer[50];
+	char *ptr;
+
+	ptr = &buffer[49];
+ 1d0:	3dd00793          	addi	x15,x0,989
+ 1d4:	fef42623          	sw	x15,-20(x8)
+	*ptr = '\0';
+ 1d8:	fec42783          	lw	x15,-20(x8)
+ 1dc:	00078023          	sb	x0,0(x15)
+
+	do
+	{
+                int x = mymod(num, base);
+ 1e0:	fdc42783          	lw	x15,-36(x8)
+ 1e4:	fd842583          	lw	x11,-40(x8)
+ 1e8:	00078513          	addi	x10,x15,0
+ 1ec:	f85ff0ef          	jal	x1,170 <mymod>
+ 1f0:	fea42423          	sw	x10,-24(x8)
+		*--ptr = Representation[x];
+ 1f4:	fec42783          	lw	x15,-20(x8)
+ 1f8:	fff78793          	addi	x15,x15,-1
+ 1fc:	fef42623          	sw	x15,-20(x8)
+ 200:	39400713          	addi	x14,x0,916
+ 204:	fe842783          	lw	x15,-24(x8)
+ 208:	00f707b3          	add	x15,x14,x15
+ 20c:	0007c703          	lbu	x14,0(x15)
+ 210:	fec42783          	lw	x15,-20(x8)
+ 214:	00e78023          	sb	x14,0(x15)
+		num = mydiv(num, base);
+ 218:	fdc42783          	lw	x15,-36(x8)
+ 21c:	fd842583          	lw	x11,-40(x8)
+ 220:	00078513          	addi	x10,x15,0
+ 224:	ef5ff0ef          	jal	x1,118 <mydiv>
+ 228:	00050793          	addi	x15,x10,0
+ 22c:	fcf42e23          	sw	x15,-36(x8)
+	}while(num != 0);
+ 230:	fdc42783          	lw	x15,-36(x8)
+ 234:	fa0796e3          	bne	x15,x0,1e0 <convert+0x28>
+
+	return(ptr);
+ 238:	fec42783          	lw	x15,-20(x8)
+}
+ 23c:	00078513          	addi	x10,x15,0
+ 240:	02c12083          	lw	x1,44(x2)
+ 244:	02812403          	lw	x8,40(x2)
+ 248:	03010113          	addi	x2,x2,48
+ 24c:	00008067          	jalr	x0,0(x1)
+
+00000250 <myputs>:
+
+// void myputs(const char *a, int len)
+void myputs(const char *a)
+{
+ 250:	fe010113          	addi	x2,x2,-32
+ 254:	00112e23          	sw	x1,28(x2)
+ 258:	00812c23          	sw	x8,24(x2)
+ 25c:	00912a23          	sw	x9,20(x2)
+ 260:	02010413          	addi	x8,x2,32
+ 264:	fea42623          	sw	x10,-20(x8)
+    register char* p;
+	for(p=(char *)a; (*p)!=0; p++) {
+ 268:	fec42483          	lw	x9,-20(x8)
+ 26c:	0140006f          	jal	x0,280 <myputs+0x30>
+		outbyte(*p);
+ 270:	0004c783          	lbu	x15,0(x9)
+ 274:	00078513          	addi	x10,x15,0
+ 278:	dd5ff0ef          	jal	x1,4c <outbyte>
+	for(p=(char *)a; (*p)!=0; p++) {
+ 27c:	00148493          	addi	x9,x9,1
+ 280:	0004c783          	lbu	x15,0(x9)
+ 284:	fe0796e3          	bne	x15,x0,270 <myputs+0x20>
+	}
+}
+ 288:	00000013          	addi	x0,x0,0
+ 28c:	01c12083          	lw	x1,28(x2)
+ 290:	01812403          	lw	x8,24(x2)
+ 294:	01412483          	lw	x9,20(x2)
+ 298:	02010113          	addi	x2,x2,32
+ 29c:	00008067          	jalr	x0,0(x1)
+
+000002a0 <fib>:
+#include "outbyte.c"
+
+int fib(int n)
+{
+ 2a0:	fe010113          	addi	x2,x2,-32
+ 2a4:	00112e23          	sw	x1,28(x2)
+ 2a8:	00812c23          	sw	x8,24(x2)
+ 2ac:	00912a23          	sw	x9,20(x2)
+ 2b0:	02010413          	addi	x8,x2,32
+ 2b4:	fea42623          	sw	x10,-20(x8)
+	if (n<=2) return 1;
+ 2b8:	fec42703          	lw	x14,-20(x8)
+ 2bc:	00200793          	addi	x15,x0,2
+ 2c0:	00e7c663          	blt	x15,x14,2cc <fib+0x2c>
+ 2c4:	00100793          	addi	x15,x0,1
+ 2c8:	0300006f          	jal	x0,2f8 <fib+0x58>
+	else return fib(n-1) + fib(n-2);
+ 2cc:	fec42783          	lw	x15,-20(x8)
+ 2d0:	fff78793          	addi	x15,x15,-1
+ 2d4:	00078513          	addi	x10,x15,0
+ 2d8:	fc9ff0ef          	jal	x1,2a0 <fib>
+ 2dc:	00050493          	addi	x9,x10,0
+ 2e0:	fec42783          	lw	x15,-20(x8)
+ 2e4:	ffe78793          	addi	x15,x15,-2
+ 2e8:	00078513          	addi	x10,x15,0
+ 2ec:	fb5ff0ef          	jal	x1,2a0 <fib>
+ 2f0:	00050793          	addi	x15,x10,0
+ 2f4:	00f487b3          	add	x15,x9,x15
+}
+ 2f8:	00078513          	addi	x10,x15,0
+ 2fc:	01c12083          	lw	x1,28(x2)
+ 300:	01812403          	lw	x8,24(x2)
+ 304:	01412483          	lw	x9,20(x2)
+ 308:	02010113          	addi	x2,x2,32
+ 30c:	00008067          	jalr	x0,0(x1)
+
+00000310 <main>:
+
+int main()
+{
+ 310:	ff010113          	addi	x2,x2,-16
+ 314:	00112623          	sw	x1,12(x2)
+ 318:	00812423          	sw	x8,8(x2)
+ 31c:	01010413          	addi	x8,x2,16
+	if (fib(6)==8)
+ 320:	00600513          	addi	x10,x0,6
+ 324:	f7dff0ef          	jal	x1,2a0 <fib>
+ 328:	00050713          	addi	x14,x10,0
+ 32c:	00800793          	addi	x15,x0,8
+ 330:	00f71863          	bne	x14,x15,340 <main+0x30>
+		myputs("HelloWorld\n");
+ 334:	34c00513          	addi	x10,x0,844
+ 338:	f19ff0ef          	jal	x1,250 <myputs>
+ 33c:	00c0006f          	jal	x0,348 <main+0x38>
+	else
+		myputs("GoodbyeWorld\n");
+ 340:	35800513          	addi	x10,x0,856
+ 344:	f0dff0ef          	jal	x1,250 <myputs>
+
+	// Infinite loop to avoid repeating the program
+	for(;;);
+ 348:	0000006f          	jal	x0,348 <main+0x38>

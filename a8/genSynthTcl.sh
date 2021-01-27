@@ -1,0 +1,33 @@
+#! /bin/sh
+#
+# Generate synth.tcl for tests
+#
+
+echo "create_project -force cpu_proj ./cpu_proj -part xc7a35tcpg236-1"
+echo "add_files ./cpu.v"
+echo "add_files ./alu32.v"
+echo "add_files ./immGen.v"
+echo "add_files ./regfile.v"
+echo "add_files ./control.v"
+echo ""
+echo "add_files -fileset sim_1 ./cpu_tb.v"
+echo "add_files -fileset sim_1 ./dmem.v"
+echo "add_files -fileset sim_1 ./imem.v"
+echo ""
+echo "add_files -fileset sim_1 ./$@/idata.mem"
+echo "add_files -fileset sim_1 ./$@/expout.txt"
+echo ""
+echo "update_compile_order -fileset sim_1"
+echo "launch_simulation"
+echo "run all"
+echo "close_sim"
+echo ""
+echo "launch_runs synth_1 -jobs 8"
+echo "wait_on_run synth_1"
+echo "open_run [current_run -synth -quiet]"
+echo "namespace import ::tclapp::xilinx::designutils::report_failfast"
+echo "report_failfast -csv -transpose -no_header -file utilisation.csv"
+echo ""
+echo "launch_simulation -mode post-synthesis -type functional"
+echo "run all"
+echo "close_sim"
