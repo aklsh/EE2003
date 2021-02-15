@@ -18,7 +18,7 @@ The tools are not provided as part of this repository and are to be built from s
 
 Setup
 -----
-This setup assumes that you like to keep your global .profile clean and would like to add project-specific ENV_VARS(tools) to a separate file(directory) in the project. For this, direnv[4] is recommended. The .envrc present here assumes that you install the required tools in tools/ directory here.
+This setup assumes that you like to keep your global .profile clean and would like to add project-specific ENV_VARS and tools you normally wouldn't use for any other purpose, to a separate file(directory) in the project. For this, direnv[4] is recommended. The .envrc present here assumes that you install the required tools in tools/ directory here.
 
 DroneCI requires you to keep DRONE_TOKEN and DRONE_SERVER as ENV_VARS. Please add your DRONE_TOKEN credential to .envrc as:
 
